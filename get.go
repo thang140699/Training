@@ -13,6 +13,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"mongo-with-golang/uploadfile"
 )
 
 var (
@@ -127,22 +129,23 @@ func main() {
 	defer res.Body.Close()
 
 	//handleTime()
-	pathFolder := handleTime()
-
-	out, err := os.Create(pathFolder + "/test.zip")
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	defer out.Close()
-	_, err = io.Copy(out, res.Body)
-	if err != nil {
-		panic(err)
-	}
-
-	Unzip(pathFolder)
-	e := os.Remove(pathFolder + "/test.zip")
-	if e != nil {
-		log.Fatal(e)
-	}
+	//pathFolder := handleTime()
+	//
+	//out, err := os.Create(pathFolder + "/test.zip")
+	//if err != nil {
+	//	log.Fatalln(err)
+	//}
+	//
+	//defer out.Close()
+	//_, err = io.Copy(out, res.Body)
+	//if err != nil {
+	//	panic(err)
+	//}
+	//
+	//Unzip(pathFolder)
+	//e := os.Remove(pathFolder + "/test.zip")
+	//if e != nil {
+	//	log.Fatal(e)
+	//}
+	uploadfile.Upload()
 }
