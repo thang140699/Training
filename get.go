@@ -3,9 +3,14 @@ package main
 import (
 	"archive/zip"
 	"fmt"
+	"github.com/joho/godotenv"
 	"io"
 	"io/ioutil"
 	"log"
+	"mongo-with-golang/localhost"
+
+	//"mongo-with-golang/controller"
+	"mongo-with-golang/uploadfile"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -13,13 +18,15 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"mongo-with-golang/uploadfile"
 )
 
 var (
-	trTags = regexp.MustCompile(`<tr[^>]*>(?:.|\n)*<\/tr>`)
-	tagA   = regexp.MustCompile(`<\s*a[^>]*>(.*?)<\s*/\s*a>`)
+	trTags     = regexp.MustCompile(`<tr[^>]*>(?:.|\n)*<\/tr>`)
+	tagA       = regexp.MustCompile(`<\s*a[^>]*>(.*?)<\s*/\s*a>`)
+	_          = godotenv.Load(".env")
+	domainFile = os.Getenv("domainTxT")
+	url        = os.Getenv("url")
+	domainZip  = os.Getenv("domainZip")
 )
 
 func getStringURL(url string) string {
@@ -54,17 +61,17 @@ func getLinkDomain(URL string) string {
 	IndexIncludeLinkOnHref := 1
 	return links[IndexIncludeLinkOnHref]
 }
-func rename(Original_path string, fileName string) {
+func rename(OriginalPath string, fileName string) {
 
-	New_path := Original_path + "/Domain.txt"
-	r := os.Rename(fileName, New_path)
+	NewPath := OriginalPath + domainFile
+	r := os.Rename(fileName, NewPath)
 	if r != nil {
 		log.Fatal(r)
 	}
 }
 func Unzip(pathFolder string) {
 	dst := pathFolder
-	archive, err := zip.OpenReader(pathFolder + "/test.zip")
+	archive, err := zip.OpenReader(pathFolder + domainZip)
 	fmt.Println()
 	if err != nil {
 		log.Fatalln("z : ", err)
@@ -118,8 +125,8 @@ func handleTime() string {
 }
 
 func main() {
-	const URL = "https://www.whoisds.com/newly-registered-domains"
-	link := getLinkDomain(URL)
+
+	link := getLinkDomain(url)
 	fmt.Println("Link: ", link)
 	res, err := http.Get(link)
 
@@ -128,10 +135,10 @@ func main() {
 	}
 	defer res.Body.Close()
 
-	//handleTime()
+	handleTime()
 	//pathFolder := handleTime()
 	//
-	//out, err := os.Create(pathFolder + "/test.zip")
+	//out, err := os.Create(pathFolder + domainZip)
 	//if err != nil {
 	//	log.Fatalln(err)
 	//}
@@ -143,9 +150,12 @@ func main() {
 	//}
 	//
 	//Unzip(pathFolder)
-	//e := os.Remove(pathFolder + "/test.zip")
+	//e := os.Remove(pathFolder + domainZip)
 	//if e != nil {
 	//	log.Fatal(e)
 	//}
-	uploadfile.Upload()
+	uploadfile.Upload(time.Time{})
+
+	localhost.Connect()
+
 }
