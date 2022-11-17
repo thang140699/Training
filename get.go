@@ -3,13 +3,10 @@ package main
 import (
 	"archive/zip"
 	"fmt"
-	"github.com/joho/godotenv"
 	"io"
 	"io/ioutil"
 	"log"
-	"mongo-with-golang/localhost"
-
-	//"mongo-with-golang/controller"
+	"mongo-with-golang/apis"
 	"mongo-with-golang/uploadfile"
 	"net/http"
 	"os"
@@ -18,6 +15,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 )
 
 var (
@@ -69,6 +69,7 @@ func rename(OriginalPath string, fileName string) {
 		log.Fatal(r)
 	}
 }
+
 func Unzip(pathFolder string) {
 	dst := pathFolder
 	archive, err := zip.OpenReader(pathFolder + domainZip)
@@ -125,7 +126,6 @@ func handleTime() string {
 }
 
 func main() {
-
 	link := getLinkDomain(url)
 	fmt.Println("Link: ", link)
 	res, err := http.Get(link)
@@ -136,26 +136,36 @@ func main() {
 	defer res.Body.Close()
 
 	handleTime()
-	//pathFolder := handleTime()
-	//
-	//out, err := os.Create(pathFolder + domainZip)
-	//if err != nil {
-	//	log.Fatalln(err)
-	//}
-	//
-	//defer out.Close()
-	//_, err = io.Copy(out, res.Body)
-	//if err != nil {
-	//	panic(err)
-	//}
-	//
-	//Unzip(pathFolder)
-	//e := os.Remove(pathFolder + domainZip)
-	//if e != nil {
-	//	log.Fatal(e)
-	//}
+
+	// create filezip
+
+	pathFolder := handleTime()
+
+	out, err := os.Create(pathFolder + domainZip)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	defer out.Close()
+	_, err = io.Copy(out, res.Body)
+	if err != nil {
+		panic(err)
+	}
+
+	Unzip(pathFolder)
+	e := os.Remove(pathFolder + domainZip)
+	if e != nil {
+		log.Fatal(e)
+	}
+
+	router := mux.NewRouter()
+	router.HandleFunc("/api/v1/user/find", apis.FindUser).Methods("GET")
+	router.HandleFunc("/api/v1/user/getall", apis.GetAll).Methods("GET")
+	router.HandleFunc("/api/v1/user/create", apis.CreateUser).Methods("POST")
+	// router.HandleFunc("api/v1/user/update", apis.UpdateUser).Methods("PUT")
+	err = http.ListenAndServe(":5000", router)
+	if err != nil {
+		panic(err)
+	}
 	uploadfile.Upload(time.Time{})
-
-	localhost.Connect()
-
 }

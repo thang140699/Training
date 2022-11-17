@@ -2,16 +2,13 @@ package uploadfile
 
 import (
 	"bufio"
-	"context"
 	"fmt"
-	"github.com/joho/godotenv"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"log"
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/joho/godotenv"
 )
 
 type setTime struct {
@@ -42,30 +39,20 @@ func Upload(Time time.Time) string {
 		fmt.Println(err)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	// 	connect
+	// https: //domain:9000/api
 
-	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI("mongodb://localhost:27017"))
-	//mongoclient, err = mongo.Connect(ctx, client)
-	if err != nil {
-		panic(err)
-	}
-	defer cancel()
-	//check
-	if err := client.Ping(context.TODO(), readpref.Primary()); err != nil {
-		panic(err)
-	}
-	uploadDomain := client.Database("domain").Collection("web")
-
-	var docs []interface{}
-	for scanner.Scan() {
-		line := scanner.Text()
-		newBson := setTime{time.Now(), line}
-		docs = append(docs, newBson)
-		uploadDomians, err := uploadDomain.InsertOne(ctx, newBson)
-		if err != nil {
-			log.Fatalln("False ", uploadDomians)
-		}
-	}
+	// settime
+	// var docs []interface{}
+	// for scanner.Scan() {
+	// 	line := scanner.Text()
+	// 	newBson := setTime{time.Now(), line}
+	// 	docs = append(docs, newBson)
+	// 	uploadDomians, err := uploadDomain.InsertOne(ctx, newBson)
+	// 	if err != nil {
+	// 		log.Fatalln("False ", uploadDomians)
+	// 	}
+	// }
 	return ""
 
 }
