@@ -29,6 +29,7 @@ func FindUser(response http.ResponseWriter, request *http.Request) {
 }
 
 //connect mongo and getall dataa
+
 func GetAll(response http.ResponseWriter, request *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 
@@ -42,16 +43,23 @@ func GetAll(response http.ResponseWriter, request *http.Request) {
 	if err := client.Ping(context.TODO(), readpref.Primary()); err != nil {
 		panic(err)
 	}
+
 	collec := client.Database("domain").Collection("web")
 	cursor, err := collec.Find(context.TODO(), bson.D{})
 	if err != nil {
 		panic(err)
 	}
-
+	// db.Collection()
 	var result []bson.M
 	if err := cursor.All(context.TODO(), &result); err != nil {
 		panic(err)
 	}
+	// filer := bson.D{{"Domain",bson.D{{"$lt",100}}}}
+	// count, err := collec.CountDocuments(context.TODO(),filer)
+	// if err != nil {
+	// 	panic(err)
+	// }
+
 	responseWithJSON(response, http.StatusOK, result)
 }
 
